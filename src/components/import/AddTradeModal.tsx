@@ -9,14 +9,16 @@ const CURRENCIES: Currency[] = ['EUR', 'USD', 'GBP', 'CHF'];
 
 interface AddTradeModalProps {
   onClose: () => void;
+  title?: string;
+  description?: string;
 }
 
 /**
  * Manual trade entry (Commit 011, requested explicitly after the CSV
- * import commit): lets someone create a Trade by hand instead of
- * importing a CSV — e.g. to record an already-open position by entering
- * "I hold N shares at average cost P as of date D" as a single BUY
- * trade.
+ * import commit; retargeted from Transactions to Portfolio after
+ * feedback — people think in terms of "open a position", not
+ * "log a transaction", even though under the hood it's the same
+ * record).
  *
  * This does NOT bypass ADR-005. It creates a real `Trade` record
  * through the same `addTrades` store action CSV import uses, validated
@@ -24,7 +26,11 @@ interface AddTradeModalProps {
  * Position is still fully derived by Commander Core — nothing here
  * writes to a Position directly or overrides a calculated value.
  */
-export function AddTradeModal({ onClose }: AddTradeModalProps) {
+export function AddTradeModal({
+  onClose,
+  title = 'Add Position',
+  description = 'Creates a real trade record — the same way CSV import does. Enter what you currently hold (e.g. "10 shares at €150 avg cost since 2023-03-10") and the position is derived from it automatically.',
+}: AddTradeModalProps) {
   const portfolio = usePortfolioStore((s) => s.portfolio);
   const assets = usePortfolioStore((s) => s.assets);
   const upsertAsset = usePortfolioStore((s) => s.upsertAsset);
@@ -100,16 +106,13 @@ export function AddTradeModal({ onClose }: AddTradeModalProps) {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
       <div className="w-full max-w-md rounded-lg border border-border bg-surface p-4">
         <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-sm font-semibold">Add Trade Manually</h2>
+          <h2 className="text-sm font-semibold">{title}</h2>
           <button onClick={onClose} aria-label="Close" className="text-text-muted hover:text-text">
             <X size={18} />
           </button>
         </div>
 
-        <p className="mb-3 text-xs text-text-muted">
-          Creates a real trade record — the same way CSV import does. Use this to record an
-          already-open position (e.g. "10 shares at €150 avg cost since 2023-03-10").
-        </p>
+        <p className="mb-3 text-xs text-text-muted">{description}</p>
 
         <div className="grid grid-cols-2 gap-3">
           <Field label="Ticker *">

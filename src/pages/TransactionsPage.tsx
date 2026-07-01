@@ -116,7 +116,13 @@ export function TransactionsPage() {
       )}
 
       {wizardOpen && <ImportWizard onClose={() => setWizardOpen(false)} />}
-      {addTradeOpen && <AddTradeModal onClose={() => setAddTradeOpen(false)} />}
+      {addTradeOpen && (
+        <AddTradeModal
+          onClose={() => setAddTradeOpen(false)}
+          title="Add Trade Manually"
+          description="Creates a real trade record — the same way CSV import does."
+        />
+      )}
     </div>
   );
 }

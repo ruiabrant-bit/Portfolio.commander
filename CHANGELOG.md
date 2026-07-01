@@ -6,6 +6,36 @@ Agent" (§20): *"Document every architectural decision in CHANGELOG.md."*
 
 ## [Unreleased]
 
+## Commit 012 — Add Position from Portfolio
+
+**Scope:** direct follow-up feedback on Commit 011: manual trade entry
+existed but only from Transactions, and the ask was specifically "let
+me open positions in the Portfolio" — Transactions is a history view,
+Portfolio is where positions are thought about. Same underlying
+mechanism, different (and better) entry point.
+
+### Changed
+
+- **`components/import/AddTradeModal.tsx`**: title/description are now
+  configurable props, so the same component reads naturally from both
+  entry points instead of always saying "Add Trade Manually".
+- **Portfolio page**: "Add Position" button added to the toolbar
+  (always visible, not just on the empty state) and wired into the
+  empty state as the primary action — ahead of "Load Demo Data", which
+  moved to a secondary button.
+- **Transactions page**: keeps its own "Add Trade Manually" entry
+  point with history-appropriate copy — both call the exact same
+  `AddTradeModal`/`addTrades` path, so there is only one way trades
+  actually get created, just two doors into it.
+
+### Verification
+
+- `npm run build` — compiles cleanly.
+- `npm run test:run` — 129/129 tests passing (no new business logic —
+  same modal, same store action, just reused with different copy from
+  a second location).
+- `npm run lint` — 0 warnings, 0 errors.
+
 ## Commit 011 — Manual Trade Entry
 
 **Scope:** post-MVP addition, requested explicitly after testing the
