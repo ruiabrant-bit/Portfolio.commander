@@ -6,6 +6,72 @@ Agent" (§20): *"Document every architectural decision in CHANGELOG.md."*
 
 ## [Unreleased]
 
+## Commit 008b — Market Data Integration (Twelve Data)
+
+**Scope:** unplanned addition, requested explicitly after Commit 008
+surfaced the market-data gap. Not in the original Appendix A list —
+inserted here because it's its own logical feature (SFS §15: one
+feature per commit), separate from both Technical Analysis (008) and
+News & Calendar (009).
+
+**Decisions made explicitly with the person** (not assumed):
+- **Provider**: Twelve Data (free tier, ~800 requests/day, good balance
+  of quota vs. data quality for a personal portfolio, vs. Alpha
+  Vantage's 25/day or Finnhub as alternatives that were also discussed).
+- **API key storage**: client-side (localStorage), the simpler of two
+  options presented. Trade-off stated plainly: fine for personal local
+  use, but the key would be visible to anyone if this app is ever
+  deployed publicly rather than run locally — a backend proxy would be
+  needed for that case, and wasn't chosen here.
+
+### Added
+
+- **`utils/apiKeyStorage.ts`**: localStorage wrapper for the Twelve
+  Data key. (Note: this is a real standalone app the person runs
+  independently, not a Claude.ai Artifact — the "never use
+  localStorage" constraint that applies to Artifacts doesn't apply to
+  this project's own source code.)
+- **`services/marketdata/twelveDataClient.ts`**: `fetchQuotes` (single
+  batched request for all known assets, to conserve the free-tier
+  quota) and `fetchTimeSeries` (per-asset, fetched only when that
+  asset's Chart/Technical Analysis tab is actually opened — not
+  proactively for every known asset). Response parsing is split into
+  pure `mapQuoteResponse`/`mapTimeSeriesResponse` functions so the
+  request-shaping logic is unit-testable without mocking `fetch`.
+- **`components/settings/MarketDataSettings.tsx`**: API key entry/
+  removal, manual "Refresh Prices" action (deliberately manual, not on
+  a timer, to keep quota usage in the person's control). Added to the
+  Settings page ahead of Commit 010 — documented as a deliberate,
+  scoped exception, not scope creep into the rest of Settings (currency/
+  theme/backup are still placeholders).
+- **Position Detail Chart tab** (now real): daily close price line
+  chart with a 20-day SMA overlay, once an API key is configured.
+- **Position Detail Technical Analysis tab** (now real): latest RSI,
+  MACD, ATR, Bollinger Band values computed from fetched price history,
+  with brief interpretive hints (overbought/oversold, above/below
+  signal).
+- 8 new tests for the Twelve Data response mappers (valid quote/series
+  parsing, error-code handling, chronological reordering). 112 tests
+  total (up from 104).
+
+### Deferred (explicitly out of scope)
+
+- Screener technical filters — still not wired, since it would require
+  fetching historical series for every known asset just to populate
+  filter controls, which could burn through the free-tier quota fast
+  for a portfolio with many holdings. Left as a conscious choice rather
+  than silently implemented in a quota-unsafe way.
+- Backend proxy / secure key storage — not chosen; see decision note
+  above. Revisit if this app is ever deployed publicly.
+- Automatic/scheduled price refresh — manual only, by design.
+
+### Verification
+
+- `npm run build` — compiles cleanly (same pre-existing bundle-size
+  warning, not an error).
+- `npm run test:run` — 112/112 tests passing.
+- `npm run lint` — 0 warnings, 0 errors.
+
 ## Commit 008 — Technical Analysis
 
 **Scope:** Appendix A, Commit 008.
