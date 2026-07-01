@@ -4,6 +4,8 @@ import { ArrowLeft } from 'lucide-react';
 import { usePositionRows } from '../hooks/usePositionRows';
 import { usePortfolioStore } from '../store/portfolioStore';
 import { NotesTab } from '../components/position/NotesTab';
+import { PriceChartTab } from '../components/position/PriceChartTab';
+import { TechnicalAnalysisTab } from '../components/position/TechnicalAnalysisTab';
 
 type TabId =
   | 'overview'
@@ -33,10 +35,11 @@ const fmt = (n: number, digits = 2) =>
  * Position Detail (PRD v1.1): tabs preserve state while switching (kept
  * as local component state, not route-driven, per PRD v1.3 "tabs that
  * preserve state"). Overview/Transactions/Dividends/Notes are fully real
- * — they read directly from the store and Commander Core. Chart /
- * Technical / Fundamental / AI Summary depend on data sources that don't
- * exist yet (market history, indicators, AI layer) and are scoped to
- * later commits.
+ * — they read directly from the store and Commander Core. Chart and
+ * Technical Analysis are real once a Twelve Data API key is configured
+ * (Commit 008b) — otherwise they show a clear "connect a key" prompt.
+ * Fundamental Analysis and AI Summary still depend on data sources that
+ * don't exist yet.
  */
 export function PositionDetailPage() {
   const { assetId } = useParams();
@@ -142,9 +145,7 @@ export function PositionDetailPage() {
         </dl>
       )}
 
-      {activeTab === 'chart' && (
-        <TabPlaceholder text="Price chart needs historical market data. No market data provider is wired into the app yet — that's a decision to make explicitly, not assigned to a specific commit in the current plan." />
-      )}
+      {activeTab === 'chart' && <PriceChartTab ticker={row.asset?.ticker ?? assetId ?? ''} />}
 
       {activeTab === 'transactions' && (
         <TransactionsTable trades={assetTrades} />
@@ -155,7 +156,7 @@ export function PositionDetailPage() {
       {activeTab === 'notes' && assetId && <NotesTab assetId={assetId} />}
 
       {activeTab === 'technical' && (
-        <TabPlaceholder text="RSI, MACD, EMA/SMA, ATR, VWAP, Bollinger Bands, Support/Resistance and Fibonacci are implemented and tested (Signal Engine) — they just have no historical price data to run against yet." />
+        <TechnicalAnalysisTab ticker={row.asset?.ticker ?? assetId ?? ''} />
       )}
 
       {activeTab === 'fundamental' && (
