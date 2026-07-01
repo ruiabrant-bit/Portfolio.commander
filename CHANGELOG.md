@@ -6,6 +6,56 @@ Agent" (§20): *"Document every architectural decision in CHANGELOG.md."*
 
 ## [Unreleased]
 
+## Commit 006 — Reports
+
+**Scope:** Appendix A, Commit 006.
+
+### Added
+
+- **`services/reports/reportBuilder.ts`**: composes existing, already-
+  tested Commander Core outputs into report shapes — nothing new is
+  calculated at the raw-number level, only regrouped.
+  - `realizedProfitByPeriod` / `dividendsByPeriod`: exact month/year
+    grouping of realized trade profit and dividend income, both fully
+    derivable from trade/dividend history.
+  - `approximateCAGRSinceInception`: **explicitly labeled
+    "Approximate"** in the UI. It treats Invested Capital as a single
+    lump sum at the first trade date, ignoring the timing of later
+    contributions — a true money-weighted (XIRR) return needs a
+    persisted contribution timeline that doesn't exist yet.
+- **Reports page** (real implementation), four sections:
+  - **Performance**: Total Return, Approximate CAGR, total Realized P/L,
+    current Unrealized P/L, plus a Realized P/L by month/year bar chart.
+    **Deliberately does not claim a full historical Total Return
+    curve** — that requires persisted daily portfolio value snapshots
+    (market data history), which land with Commit 008/009. Showing a
+    fabricated smooth curve here would be worse than not showing one.
+  - **Allocation**: Sector / Country / Currency / Asset Type tables,
+    reusing the same `allocationEngine` functions from Commit 001/003 —
+    no new allocation logic.
+  - **Dividends**: total net dividends, by-period bar chart, CSV export
+    (reuses `utils/csv.ts` from Commit 003).
+  - PDF export is a disabled, clearly-labeled "coming soon" button —
+    PRD v1.3 states PDF export is future scope; CSV is offered instead
+    since it's real today.
+- 6 new tests for the report builder (period grouping, CAGR edge cases,
+  key sorting/merging). 76 tests total (up from 70).
+
+### Deferred (explicitly out of scope for this commit)
+
+- True historical Total Return / drawdown charting — needs persisted
+  portfolio value snapshots (Commit 008/009 market data).
+- Cash-flow-weighted (XIRR) return — needs a persisted contribution
+  timeline; current CAGR is a documented approximation.
+- PDF export — explicitly future scope per PRD v1.3.
+
+### Verification
+
+- `npm run build` — compiles cleanly (same pre-existing bundle-size
+  warning, not an error).
+- `npm run test:run` — 76/76 tests passing.
+- `npm run lint` — 0 warnings, 0 errors.
+
 ## Commit 005 — Dashboard
 
 **Scope:** Appendix A, Commit 005.
