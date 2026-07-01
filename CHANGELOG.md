@@ -6,6 +6,39 @@ Agent" (§20): *"Document every architectural decision in CHANGELOG.md."*
 
 ## [Unreleased]
 
+## Commit 011 — Manual Trade Entry
+
+**Scope:** post-MVP addition, requested explicitly after testing the
+MVP. Not part of the original Appendix A list.
+
+### Added
+
+- **`components/import/AddTradeModal.tsx`**: lets someone create a
+  `Trade` by hand instead of importing a CSV — e.g. to record an
+  already-open position as "N shares at average cost P since date D",
+  entered as a single BUY trade. **Does not weaken ADR-005**: this
+  creates a real trade record through the exact same `addTrades` store
+  action and `assertValidTrade` validation (PRD v1.2 §7) that CSV
+  import uses. The resulting Position is still fully derived by
+  Commander Core — nothing writes to a Position directly, and there is
+  still no way to manually set a position's quantity or average price.
+  If the ticker is new, a minimal `Asset` is created via `upsertAsset`
+  (same pattern as Watchlists' manual ticker entry from Commit 003).
+- **Transactions page**: "Add Trade Manually" button next to "Import
+  CSV".
+- **Portfolio page**: empty-state copy updated (it still referenced
+  "the import wizard lands in Commit 004", stale since that commit
+  shipped) and now links to Transactions for both CSV import and
+  manual entry.
+
+### Verification
+
+- `npm run build` — compiles cleanly.
+- `npm run test:run` — 129/129 tests passing (no new engine/store logic
+  — the modal composes already-tested `assertValidTrade`, `addTrades`,
+  `upsertAsset`).
+- `npm run lint` — 0 warnings, 0 errors.
+
 ## Commit 010 — Polish
 
 **Scope:** Appendix A, Commit 010 — the last of the originally planned

@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react';
-import { Upload, ArrowLeftRight } from 'lucide-react';
+import { Upload, Plus, ArrowLeftRight } from 'lucide-react';
 import { usePortfolioStore } from '../store/portfolioStore';
 import { ImportWizard } from '../components/import/ImportWizard';
+import { AddTradeModal } from '../components/import/AddTradeModal';
 
 type Row =
   | { kind: 'trade'; date: string; label: string; detail: string; amount: number }
@@ -17,6 +18,7 @@ const fmt = (n: number) =>
  */
 export function TransactionsPage() {
   const [wizardOpen, setWizardOpen] = useState(false);
+  const [addTradeOpen, setAddTradeOpen] = useState(false);
   const trades = usePortfolioStore((s) => s.trades);
   const dividends = usePortfolioStore((s) => s.dividends);
   const cashMovements = usePortfolioStore((s) => s.cashMovements);
@@ -59,6 +61,13 @@ export function TransactionsPage() {
       <div className="mb-4 flex items-center gap-2">
         <h1 className="mr-auto text-xl font-semibold tracking-tight">Transactions</h1>
         <button
+          onClick={() => setAddTradeOpen(true)}
+          className="flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 text-sm text-text-muted hover:bg-surface-hover hover:text-text"
+        >
+          <Plus size={14} />
+          Add Trade Manually
+        </button>
+        <button
           onClick={() => setWizardOpen(true)}
           className="flex items-center gap-1.5 rounded-md bg-accent px-3 py-1.5 text-sm font-medium text-white hover:bg-accent/90"
         >
@@ -70,7 +79,9 @@ export function TransactionsPage() {
       {rows.length === 0 ? (
         <div className="flex flex-col items-center gap-2 py-16 text-center">
           <ArrowLeftRight size={20} className="text-text-faint" />
-          <p className="text-sm text-text-muted">No transactions yet. Import a CSV to get started.</p>
+          <p className="text-sm text-text-muted">
+            No transactions yet. Import a CSV or add a trade manually to get started.
+          </p>
         </div>
       ) : (
         <div className="overflow-x-auto rounded-lg border border-border">
@@ -105,6 +116,7 @@ export function TransactionsPage() {
       )}
 
       {wizardOpen && <ImportWizard onClose={() => setWizardOpen(false)} />}
+      {addTradeOpen && <AddTradeModal onClose={() => setAddTradeOpen(false)} />}
     </div>
   );
 }

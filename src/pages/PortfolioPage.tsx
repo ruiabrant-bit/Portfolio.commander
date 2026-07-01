@@ -1,5 +1,5 @@
 import { Fragment, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { Search, Download, Database } from 'lucide-react';
 import { usePositionRows, type PositionRow } from '../hooks/usePositionRows';
 import { usePortfolioStore } from '../store/portfolioStore';
@@ -135,9 +135,11 @@ export function PortfolioPage() {
           <div>
             <p className="text-sm font-medium">No positions yet</p>
             <p className="mt-1 max-w-sm text-sm text-text-muted">
-              Import your Trade Republic CSV to populate your portfolio. The
-              import wizard lands in Commit 004 — until then, you can load
-              sample data to try out this screen.
+              Import a Trade Republic CSV or add a trade manually from the{' '}
+              <Link to="/transactions" className="text-accent hover:underline">
+                Transactions
+              </Link>{' '}
+              page — or load sample data to try out this screen first.
             </p>
           </div>
           <button
