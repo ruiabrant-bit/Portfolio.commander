@@ -6,6 +6,68 @@ Agent" (§20): *"Document every architectural decision in CHANGELOG.md."*
 
 ## [Unreleased]
 
+## Commit 004 — CSV Import
+
+**Scope:** Appendix A, Commit 004.
+
+### Added
+
+- **`utils/hash.ts`**: FNV-1a hash for deterministic `importHash`
+  generation — same CSV row always produces the same hash, which is what
+  the store's existing de-dup logic (Commit 001) keys on.
+- **`services/import/csvParser.ts`**: thin wrapper around PapaParse
+  (added as a real dependency — it was referenced in earlier planning
+  but not actually installed until now). Auto-detects comma/semicolon/tab
+  delimiters.
+- **`services/import/importMapper.ts`**: the core of this commit.
+  - `parseLocaleNumber` — handles both `1234.56` and EU-style `1.234,56`
+    / `1234,56` formats.
+  - `parseFlexibleDate` — ISO and common `DD.MM.YYYY` / `DD/MM/YYYY`
+    formats.
+  - `mapRowsToImportResult` — maps column-mapped rows into
+    `Trade[]`/`Dividend[]`/`CashMovement[]`, validating every row via the
+    existing `utils/validation.ts` (PRD v1.2 §7) and reporting
+    `ok`/`error`/`duplicate`/`ignored` per row instead of throwing, so a
+    full preview can be shown before anything is committed.
+  - **Design decision, stated plainly**: no sample Trade Republic export
+    was available to verify an exact column schema against, so this
+    commit does **not** hardcode Trade Republic-specific column names or
+    German transaction-type labels. Instead the wizard has a column
+    -mapping step (map CSV headers to semantic fields) and a type-value
+    -mapping step (map each distinct value found in the Type column to
+    BUY/SELL/DIVIDEND/etc.). This is format-agnostic by construction —
+    it works for a real Trade Republic export as much as for any other
+    broker's CSV — and is more honest than guessing a schema that might
+    be wrong. If a real Trade Republic sample file is provided later, an
+    additional "auto-detect known format" shortcut can be layered on top
+    without changing this underlying mapper.
+- **`components/import/ImportWizard.tsx`**: 4-step modal — Upload → Map
+  Columns → Map Types → Preview (with ok/duplicate/error/ignored counts
+  and a per-row status table) → Import. Duplicates (already-imported
+  `importHash`) are detected and skipped automatically; the confirm
+  button always shows the exact count about to be imported, so nothing
+  is written silently (PRD v1.2 §1: "never overwrite without
+  confirmation").
+- **Transactions page** (real implementation): unified, date-sorted view
+  of trades/dividends/cash movements, with the CSV import entry point.
+- 18 new tests for the import mapper (number/date parsing edge cases,
+  duplicate detection, per-row validation errors, asset de-dup). 70
+  tests total (up from 52).
+
+### Deferred (explicitly out of scope for this commit)
+
+- An Trade Republic-specific "known format" auto-mapping shortcut — can
+  be added once a real sample file is available to verify against.
+- Editing/deleting individual imported transactions from the
+  Transactions page (PRD v1.2 §8: "eliminate/edit transaction →
+  automatic recalculation") — not yet built; currently import-only.
+
+### Verification
+
+- `npm run build` — compiles cleanly.
+- `npm run test:run` — 70/70 tests passing.
+- `npm run lint` — 0 warnings, 0 errors.
+
 ## Commit 003 — Portfolio Module
 
 **Scope:** Appendix A, Commit 003 — Portfolio, Position Detail, plus the
