@@ -95,8 +95,12 @@ export interface Watchlist {
 }
 
 export interface WatchlistItem {
+  id: string;
   watchlistId: string;
   assetId: string;
+  order: number;
+  tags: string[];
+  isFavorite: boolean;
 }
 
 export interface JournalEntry {
