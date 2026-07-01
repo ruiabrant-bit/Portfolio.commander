@@ -6,6 +6,74 @@ Agent" (§20): *"Document every architectural decision in CHANGELOG.md."*
 
 ## [Unreleased]
 
+## Commit 009 — News & Calendar
+
+**Scope:** Appendix A, Commit 009.
+
+**Decision made explicitly with the person** (same pattern as Commit
+008b): **Finnhub** as a single provider for News + Calendar, over
+juggling separate providers per data type. Client-side key storage,
+consistent with the precedent already set.
+
+### Fixed (scope gap from Commit 002)
+
+- **Calendar never had a route.** The PRD (v1.1) lists Calendar as its
+  own module, distinct from News, but the Commit 002 routing/sidebar
+  work only wired a News route. This went unnoticed until there was
+  data to put on a Calendar page. Added `/calendar` to the router and
+  Sidebar now, alongside the News work it was originally meant to ship
+  with.
+
+### Added
+
+- **`services/news/finnhubClient.ts`**: `fetchCompanyNews`,
+  `fetchEarningsCalendar`, `fetchEconomicCalendar`,
+  `fetchDividendCalendar`, each with a pure, unit-tested response
+  mapper. **Confidence note, stated plainly**: Company News and
+  Earnings Calendar are implemented with reasonable confidence in their
+  documented free-tier shape. Economic Calendar and Dividend Calendar
+  availability/shape on Finnhub's free tier is less certain — rather
+  than guess and risk silently wrong data, both surface Finnhub's real
+  error message in the UI if the endpoint doesn't behave as expected
+  (e.g. "requires a paid plan"), instead of being omitted or faked.
+- **`utils/apiKeyStorage.ts`** extended with Finnhub key functions,
+  same pattern as the Twelve Data key from Commit 008b.
+- **`components/settings/NewsSettings.tsx`**: Finnhub key entry, added
+  to Settings alongside Market Data — same "scoped exception ahead of
+  Commit 010" reasoning as before.
+- **News page** (real implementation): fetches company news only for
+  assets already known to the app, so "portfolio-related news first"
+  (PRD v1.1) is satisfied by construction — there's no general
+  market-news firehose being filtered, only per-holding news. AI
+  summary per article is explicitly listed as *future* scope in the PRD
+  itself, so it's correctly not built here.
+- **Calendar page** (real, new): Earnings (filtered client-side to
+  known tickers, since Finnhub's endpoint otherwise returns every US
+  company), Dividends, and Economic Events sections, each with its own
+  loading/error/empty state.
+- **Dashboard**: Calendar and News widgets changed from "coming in
+  Commit 009" placeholders to real link-through cards. They deliberately
+  don't fetch data on every Dashboard load (stated in the widget copy)
+  — that would burn Finnhub quota on a page the person may open many
+  times a day; data loads when they actually open News or Calendar.
+- 9 new tests for the Finnhub response mappers. 121 tests total (up
+  from 112).
+
+### Deferred (explicitly out of scope)
+
+- AI summaries per news article — explicitly future scope per PRD v1.1
+  itself.
+- If Economic/Dividend Calendar turn out to need a paid Finnhub plan,
+  that's a decision for the person once they see the real error message
+  from their own account.
+
+### Verification
+
+- `npm run build` — compiles cleanly (same pre-existing bundle-size
+  warning, not an error).
+- `npm run test:run` — 121/121 tests passing.
+- `npm run lint` — 0 warnings, 0 errors.
+
 ## Commit 008b — Market Data Integration (Twelve Data)
 
 **Scope:** unplanned addition, requested explicitly after Commit 008

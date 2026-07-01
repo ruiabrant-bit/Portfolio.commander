@@ -7,6 +7,7 @@ import { TransactionsPage } from '../pages/TransactionsPage';
 import { WatchlistsPage } from '../pages/WatchlistsPage';
 import { ScreenerPage } from '../pages/ScreenerPage';
 import { NewsPage } from '../pages/NewsPage';
+import { CalendarPage } from '../pages/CalendarPage';
 import { JournalPage } from '../pages/JournalPage';
 import { ReportsPage } from '../pages/ReportsPage';
 import { AICommanderPage } from '../pages/AICommanderPage';
@@ -28,6 +29,7 @@ export function AppRoutes() {
         <Route path="watchlists" element={<WatchlistsPage />} />
         <Route path="screener" element={<ScreenerPage />} />
         <Route path="news" element={<NewsPage />} />
+        <Route path="calendar" element={<CalendarPage />} />
         <Route path="journal" element={<JournalPage />} />
         <Route path="reports" element={<ReportsPage />} />
         <Route path="ai-commander" element={<AICommanderPage />} />
