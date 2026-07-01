@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { CalendarDays, Newspaper, SlidersHorizontal } from 'lucide-react';
+import { SlidersHorizontal } from 'lucide-react';
 import { useDashboardKPIs } from '../hooks/useDashboardKPIs';
 import { usePositionRows } from '../hooks/usePositionRows';
 import { usePortfolioStore } from '../store/portfolioStore';
@@ -9,7 +9,7 @@ import { AllocationChart } from '../components/dashboard/AllocationChart';
 import { WatchlistWidget } from '../components/dashboard/WatchlistWidget';
 import { TopMovers } from '../components/dashboard/TopMovers';
 import { RecentTransactionsWidget } from '../components/dashboard/RecentTransactionsWidget';
-import { DashboardPlaceholderWidget } from '../components/dashboard/DashboardPlaceholderWidget';
+import { WidgetCard } from '../components/dashboard/WidgetCard';
 
 type WidgetKey =
   | 'assetAllocation'
@@ -133,18 +133,21 @@ export function DashboardPage() {
 
           <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
             {visible.calendar && (
-              <DashboardPlaceholderWidget
-                title="Economic Calendar"
-                icon={CalendarDays}
-                text="Lands in Commit 009 — News & Calendar."
-              />
+              <WidgetCard title="Economic Calendar" to="/calendar">
+                <p className="text-sm text-text-muted">
+                  Earnings, dividends and economic events for your holdings. Not fetched here
+                  automatically to conserve the Finnhub free-tier quota — open the Calendar page
+                  to load it.
+                </p>
+              </WidgetCard>
             )}
             {visible.news && (
-              <DashboardPlaceholderWidget
-                title="News"
-                icon={Newspaper}
-                text="Portfolio-relevant news feed lands in Commit 009."
-              />
+              <WidgetCard title="News" to="/news">
+                <p className="text-sm text-text-muted">
+                  News for your holdings. Same reasoning as Calendar — opens on the News page
+                  rather than fetching on every Dashboard load.
+                </p>
+              </WidgetCard>
             )}
           </div>
         </div>

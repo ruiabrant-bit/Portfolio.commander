@@ -6,6 +6,7 @@ import {
   Star,
   SlidersHorizontal,
   Newspaper,
+  CalendarDays,
   NotebookPen,
   FileBarChart,
   Sparkles,
@@ -26,6 +27,7 @@ const NAV_ITEMS: NavItem[] = [
   { to: '/watchlists', label: 'Watchlists', icon: Star },
   { to: '/screener', label: 'Screener', icon: SlidersHorizontal },
   { to: '/news', label: 'News', icon: Newspaper },
+  { to: '/calendar', label: 'Calendar', icon: CalendarDays },
   { to: '/journal', label: 'Journal', icon: NotebookPen },
   { to: '/reports', label: 'Reports', icon: FileBarChart },
 ];
