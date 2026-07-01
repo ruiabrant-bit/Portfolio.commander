@@ -6,6 +6,58 @@ Agent" (§20): *"Document every architectural decision in CHANGELOG.md."*
 
 ## [Unreleased]
 
+## Commit 005 — Dashboard
+
+**Scope:** Appendix A, Commit 005.
+
+### Added
+
+- **`hooks/useDashboardKPIs.ts`**: Portfolio Value, Today's P/L, Total
+  Return, Cash, Invested Capital — computed via existing Commander Core
+  functions (`performanceEngine`/`portfolioEngine`), nothing new
+  calculated here. Today's P/L derives `previousClose` from
+  `MarketQuote.change` (`price - change`), which is the field the v1.0
+  domain model already carries for this exact purpose.
+- **`components/dashboard/WidgetCard.tsx`**: shared clickable-card shell
+  enforcing "every widget navigates to its related module" (PRD v1.1) in
+  one place.
+- **`components/dashboard/KpiRow.tsx`**, **`AllocationChart.tsx`**
+  (Recharts pie, reused for Asset Allocation and Sector Allocation),
+  **`TopMovers.tsx`** (Top Winners/Top Losers), **`WatchlistWidget.tsx`**,
+  **`RecentTransactionsWidget.tsx`**, **`DashboardPlaceholderWidget.tsx`**
+  (Economic Calendar / News — data source lands Commit 009).
+- **Dashboard page** (real implementation) assembling all of the above,
+  plus a "Customize" show/hide toggle per widget (PRD v1.3: "widgets
+  configurable by the user"). Explicitly session-only — no persistence
+  layer exists yet (Commit 010), so preferences reset on reload; this is
+  stated in the UI's absence of a "saved" indicator rather than silently
+  pretending to persist.
+- **Layout deviation from the PRD v1.3 wireframe, stated explicitly**:
+  the wireframe draws a 3x3 grid (Allocation/Sector/Watchlist,
+  Transactions/Calendar/News) that has no room for Top Winners/Top
+  Losers, which PRD v1.1 explicitly lists as required Dashboard widgets.
+  Rather than dropping either requirement, the grid became 4 rows (KPI
+  strip, Allocation×2+Watchlist, Winners+Losers+Transactions,
+  Calendar+News) so every widget named in v1.1 is present.
+
+### Deferred (explicitly out of scope for this commit)
+
+- Economic Calendar / News widget content — Commit 009 (no feed wired
+  yet).
+- Persisting widget show/hide preferences — Commit 010 (Settings/
+  persistence).
+- Bundle size: Recharts pushed the main JS chunk over 500 kB
+  (build warns but does not fail). Code-splitting is a Commit 010
+  (Polish) concern, not addressed here.
+
+### Verification
+
+- `npm run build` — compiles cleanly (bundle-size warning only, not an
+  error).
+- `npm run test:run` — 70/70 tests passing (no new engine logic this
+  commit — KPIs recombine existing, already-tested functions).
+- `npm run lint` — 0 warnings, 0 errors.
+
 ## Commit 004 — CSV Import
 
 **Scope:** Appendix A, Commit 004.
