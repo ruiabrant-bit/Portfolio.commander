@@ -6,6 +6,84 @@ Agent" (§20): *"Document every architectural decision in CHANGELOG.md."*
 
 ## [Unreleased]
 
+## Commit 010 — Polish
+
+**Scope:** Appendix A, Commit 010 — the last of the originally planned
+10 commits. Completes the Definition of Done checklist (PRD §Definition
+of Done) and the SFS §17 MVP Definition.
+
+**Most important fix in this commit, found while starting it**: the
+Zustand store had **no persistence** at all from Commit 001 through
+009. Every reload silently wiped the entire portfolio — trades,
+watchlists, journal, everything. This directly contradicted ADR-001
+("local-first, offline-capable for local data") and went unnoticed
+because no test exercises a page reload. Fixed here as the centerpiece
+of this commit, not mentioned in passing.
+
+### Added
+
+- **`store/portfolioStore.ts`**: wrapped in Zustand's `persist`
+  middleware (localStorage). `quotes` is explicitly excluded from
+  persistence via `partialize` — live market data should never survive
+  as stale data across a reload; it's re-fetched fresh instead. Added
+  `restoreAll` for Backup/Restore.
+- **`services/backup/backupService.ts`**: JSON export/import of the
+  full app state, separate from the automatic localStorage
+  persistence — useful for moving to a new browser or keeping an
+  off-device copy. Minimal but real shape validation
+  (`BackupValidationError`), and restoring always requires explicit
+  confirmation before overwriting current data (same "never overwrite
+  without confirmation" principle as CSV import, PRD v1.2 §1).
+- **`components/settings/GeneralSettings.tsx`**: completes Settings
+  (PRD v1.1) —
+  - **Base Currency**: real, with an honest caveat stated in the UI —
+    it relabels totals only, no FX conversion exists anywhere in the
+    app.
+  - **Theme**: real light/dark toggle. Light theme tokens added to
+    `index.css` as a `[data-theme='light']` override of the same
+    custom properties the dark theme (the SFS's explicit direction)
+    uses by default.
+  - **Backup/Restore**: wired to the new backup service, with the
+    overwrite-confirmation dialog described above.
+- **Code-splitting** (`router/AppRoutes.tsx`): the Recharts-heavy pages
+  (Dashboard, Reports, Position Detail, Calendar) are now
+  `React.lazy`-loaded behind a `Suspense` boundary. This resolves the
+  >500kB bundle-size build warning that had been accumulating since
+  Commit 005 — main bundle dropped from ~789kB to ~363kB, with the
+  Recharts chunk (~303kB) now loaded only when a chart-bearing page is
+  actually visited.
+- Removed `components/dashboard/DashboardPlaceholderWidget.tsx` — no
+  longer referenced anywhere after Commit 009 replaced its two call
+  sites with real widgets.
+- README.md rewritten to reflect the full, final feature set, the two
+  required API keys (Twelve Data, Finnhub) and where to get them, and a
+  "Known limitations" section stating the currency/screener/calendar/AI
+  caveats plainly rather than leaving them buried in commit history.
+- 15 new tests: 1 for `restoreAll`, 6 for the backup service
+  (round-trip + validation failure modes). 129 tests total (up from
+  121; net +8 after removing none).
+
+### Definition of Done — final check
+
+- ✅ Every commit compiles (`npm run build` clean at every commit in
+  this history).
+- ✅ Every business rule is tested (129 tests across engines, import,
+  store, backup, market data, news, AI Commander, screener).
+- ✅ No placeholder pages in completed modules — Settings was the last
+  one; it's now fully real. (Screener's technical-filter section and a
+  few Position Detail sub-tabs remain honestly gated behind data-source
+  decisions, not silently placeholder — see README "Known limitations".)
+- ✅ UI is responsive — Tailwind responsive breakpoints used
+  consistently since Commit 002 (sidebar collapses to an overlay,
+  grids collapse to single-column, tables scroll horizontally on
+  narrow viewports).
+
+### Verification
+
+- `npm run build` — compiles cleanly, no bundle-size warning.
+- `npm run test:run` — 129/129 tests passing.
+- `npm run lint` — 0 warnings, 0 errors.
+
 ## Commit 009 — News & Calendar
 
 **Scope:** Appendix A, Commit 009.

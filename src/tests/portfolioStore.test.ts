@@ -104,4 +104,24 @@ describe('portfolioStore', () => {
     expect(entry.notes).toBe('Updated thesis.');
     expect(entry.title).toBe('Thesis'); // untouched fields preserved
   });
+
+  it('restoreAll replaces domain state and always clears quotes (Commit 010 backup/restore)', () => {
+    const { setQuotes, restoreAll } = usePortfolioStore.getState();
+    setQuotes([{ assetId: 'AAPL', price: 100, change: 0, changePercent: 0, timestamp: '2024-01-01' }]);
+
+    restoreAll({
+      portfolio: { id: 'p1', name: 'Restored', baseCurrency: 'USD', cashBalance: 0, createdAt: '2024-01-01' },
+      assets: [],
+      trades: [],
+      dividends: [],
+      cashMovements: [],
+      watchlists: [],
+      watchlistItems: [],
+      journalEntries: [],
+    });
+
+    const state = usePortfolioStore.getState();
+    expect(state.portfolio?.name).toBe('Restored');
+    expect(state.quotes).toEqual([]); // never restored from backup - always live
+  });
 });

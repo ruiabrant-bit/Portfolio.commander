@@ -33,6 +33,32 @@
   color-scheme: dark;
 }
 
+/*
+ * Light theme (Commit 010, PRD v1.1 Settings: "Theme"). The SFS
+ * direction was explicitly a dark trading-terminal aesthetic, so dark
+ * stays the default — this overrides the same custom properties for
+ * people who prefer a light UI. Toggled by setting
+ * document.documentElement.dataset.theme = 'light' (see useTheme hook).
+ */
+[data-theme='light'] {
+  color-scheme: light;
+  --color-bg: #ffffff;
+  --color-surface: #f5f6f8;
+  --color-surface-hover: #ebedf1;
+  --color-surface-raised: #ffffff;
+  --color-border: #e2e4e9;
+  --color-border-strong: #c9cdd6;
+  --color-text: #14161c;
+  --color-text-muted: #5b6272;
+  --color-text-faint: #9aa1b0;
+  --color-accent: #3b63e0;
+  --color-accent-muted: #3b63e01a;
+  --color-positive: #0f9d64;
+  --color-positive-muted: #0f9d6420;
+  --color-negative: #d92d3d;
+  --color-negative-muted: #d92d3d20;
+}
+
 html,
 body,
 #root {

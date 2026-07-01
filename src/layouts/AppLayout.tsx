@@ -3,6 +3,7 @@ import { Outlet } from 'react-router-dom';
 import { TopBar } from '../components/layout/TopBar';
 import { Sidebar } from '../components/layout/Sidebar';
 import { StatusBar } from '../components/layout/StatusBar';
+import { useTheme } from '../hooks/useTheme';
 
 /**
  * Global layout (PRD v1.3): Top bar + persistent Sidebar + Status bar,
@@ -11,6 +12,7 @@ import { StatusBar } from '../components/layout/StatusBar';
  */
 export function AppLayout() {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  useTheme(); // applies the persisted theme attribute on mount
 
   return (
     <div className="flex h-screen flex-col bg-bg text-text">
