@@ -1,0 +1,25 @@
+@import "tailwindcss";
+
+/*
+ * Dark theme tokens (SFS §13: "Dark theme... inspired by TradingView and
+ * Bloomberg"). Full component styling arrives in Commit 002 (Layout +
+ * Navigation); this establishes the base palette only.
+ */
+:root {
+  color-scheme: dark;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  background-color: #0b0e14;
+  color: #e5e7eb;
+  font-family:
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    Roboto,
+    sans-serif;
+}
