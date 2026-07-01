@@ -6,6 +6,63 @@ Agent" (§20): *"Document every architectural decision in CHANGELOG.md."*
 
 ## [Unreleased]
 
+## Commit 002 — Layout + Navigation
+
+**Scope:** Appendix A, Commit 002.
+
+### Added
+
+- **Design tokens** (`src/index.css`): dark terminal theme (SFS §13 —
+  TradingView/Bloomberg direction) defined as Tailwind v4 `@theme`
+  tokens (`bg`, `surface`, `border`, `text`, `accent`, `positive`,
+  `negative`, plus `font-sans`/`font-data`). Signature choice: all
+  numeric/financial data renders in a monospace face with tabular
+  figures (`.font-data`), so price/return columns stay aligned across
+  every module — this is the one consistent visual thread carried
+  through the whole app.
+- **Layout shell** (`src/layouts/AppLayout.tsx`): Top bar + persistent
+  Sidebar + Status bar, matching the PRD v1.3 wireframe. Routed pages
+  render inside via `<Outlet />`.
+- **`components/layout/TopBar.tsx`**: search, market status pill,
+  "Ask AI" quick-launch, notifications, profile — per PRD v1.3.
+- **`components/layout/Sidebar.tsx`**: persistent on desktop, slide-over
+  with backdrop on mobile/tablet (hamburger-driven, per PRD v1.3
+  responsive rule). Active route marked with a left accent bar. Every
+  core module is one click away, satisfying the "max 2 clicks to any
+  core feature" navigation rule (Position Detail is the one screen that
+  needs a second click, via Portfolio).
+- **`components/layout/StatusBar.tsx`**: local-first/version indicator.
+- **Routing** (`src/router/AppRoutes.tsx`): routes for all 10 modules
+  (Dashboard, Portfolio, Position Detail, Transactions, Watchlists,
+  Screener, News, Journal, Reports, AI Commander, Settings). Added a
+  `router/` folder alongside the ADR-002 structure to hold route
+  configuration — an additive, non-breaking extension, not a
+  redesign.
+- **`components/PlaceholderPage.tsx`**: explicit "coming in Commit N"
+  placeholder used by every module not yet implemented. Chosen
+  deliberately over a blank/broken screen: navigation and routing are
+  real and working now, only the module content is pending, and each
+  placeholder states exactly which commit it lands in.
+- `src/pages/DashboardPage.tsx` carries forward the Commander Core
+  wiring verification from Commit 001 (App.tsx is now just the router
+  mount point).
+
+### Deferred (explicitly out of scope for this commit)
+
+- Real Dashboard widgets (KPI row, allocation, watchlist, calendar,
+  news) — Commit 005.
+- Portfolio table, Position Detail, Watchlists, Journal content —
+  Commit 003.
+- Transactions/CSV import wizard — Commit 004.
+- Screener — Commit 008. News — Commit 009. Reports — Commit 006.
+  AI Commander — Commit 007. Settings — Commit 010.
+
+### Verification
+
+- `npm run build` — compiles cleanly.
+- `npm run test:run` — 45/45 tests still passing (no engine changes).
+- `npm run lint` — 0 warnings, 0 errors.
+
 ## Commit 001 — Project Bootstrap + Commander Core
 
 **Scope:** Appendix A, Commit 001. First commit of the project.
