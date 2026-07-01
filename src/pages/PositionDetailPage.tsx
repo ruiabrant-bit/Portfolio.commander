@@ -143,7 +143,7 @@ export function PositionDetailPage() {
       )}
 
       {activeTab === 'chart' && (
-        <TabPlaceholder text="Price chart with technical overlays lands in Commit 008/009, once market data history is wired." />
+        <TabPlaceholder text="Price chart needs historical market data. No market data provider is wired into the app yet — that's a decision to make explicitly, not assigned to a specific commit in the current plan." />
       )}
 
       {activeTab === 'transactions' && (
@@ -155,11 +155,11 @@ export function PositionDetailPage() {
       {activeTab === 'notes' && assetId && <NotesTab assetId={assetId} />}
 
       {activeTab === 'technical' && (
-        <TabPlaceholder text="RSI, MACD, EMA/SMA, Bollinger Bands and more land in Commit 008 — Technical Analysis." />
+        <TabPlaceholder text="RSI, MACD, EMA/SMA, ATR, VWAP, Bollinger Bands, Support/Resistance and Fibonacci are implemented and tested (Signal Engine) — they just have no historical price data to run against yet." />
       )}
 
       {activeTab === 'fundamental' && (
-        <TabPlaceholder text="Fundamental ratios (P/E, PEG, ROE, Revenue Growth…) land alongside the Screener in Commit 008." />
+        <TabPlaceholder text="Fundamental ratios can be entered manually in the Screener (per asset) until a data provider is wired in." />
       )}
 
       {activeTab === 'ai-summary' && (

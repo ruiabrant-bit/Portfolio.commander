@@ -6,6 +6,77 @@ Agent" (§20): *"Document every architectural decision in CHANGELOG.md."*
 
 ## [Unreleased]
 
+## Commit 008 — Technical Analysis
+
+**Scope:** Appendix A, Commit 008.
+
+**Flagged to the person before starting**: no commit in the Appendix A
+plan assigns integrating a market data provider (historical OHLCV price
+series). Technical indicators fundamentally need that data. Rather than
+silently skip the commit or fabricate data, this commit ships the full,
+correct, tested indicator math, and is explicit everywhere in the UI
+about what's blocked and why.
+
+### Added
+
+- **`services/engines/signalEngine.ts`** — completed the full SFS §11
+  suite (SMA/EMA already existed from Commit 001):
+  - `calculateRSI` — Wilder's smoothing, period 14 default.
+  - `calculateMACD` — fast/slow/signal EMA composition (12/26/9
+    default), returns macd line, signal line, histogram.
+  - `calculateATR` — Wilder-smoothed True Range.
+  - `calculateVWAP` — cumulative volume-weighted average price.
+  - `calculateBollingerBands` — SMA middle band ± N std devs.
+  - `findSupportResistance` — local pivot high/low detection over a
+    configurable window.
+  - `calculateFibonacciLevels` — standard retracement ratios between a
+    swing low/high.
+  - All pure functions operating on caller-supplied `PricePoint[]` /
+    `OHLCV[]` — no assumption about where that data comes from.
+- **Domain model extension**: `Asset.fundamentals` (optional:
+  marketCap, peRatio, pegRatio, roe, revenueGrowth, epsGrowth,
+  dividendYield). Additive, since no fundamental-data provider exists
+  either — populated manually per asset until one is integrated.
+- **`services/screener/screenerEngine.ts`**: `filterByFundamentals` —
+  real, working AND-combined filtering over `Asset.fundamentals`.
+- **Screener page** (real implementation): fundamental filter controls
+  (P/E, PEG, ROE, Revenue/EPS Growth, Dividend Yield, Market Cap),
+  results table over the app's known assets (from CSV import or
+  manually added — no market-wide search, since there's no external
+  screening API wired in), per-asset fundamentals editor. **Technical
+  filters section is visibly present but disabled**, with the reason
+  stated in the UI, not just hidden or omitted.
+- **Position Detail**: Chart / Technical Analysis / Fundamental
+  Analysis tab copy updated to be specific about what's implemented
+  (the indicator math) vs. what's missing (real price history / a
+  market data provider), replacing the earlier "lands in Commit
+  008/009" placeholders that were written before this gap was
+  identified.
+- 20 new tests: 14 for the full indicator suite (RSI at the 0/100
+  bounds, MACD histogram consistency, ATR convergence on constant true
+  range, VWAP volume-weighting, Bollinger Band width response to
+  volatility, Fibonacci exact ratios) + 6 for fundamental filtering.
+  104 tests total (up from 86).
+
+### Deferred (explicitly out of scope for this commit — needs a decision)
+
+- **Market data provider integration** — not assigned to any commit in
+  the current plan. Needed for: Position Detail charts, technical
+  filters in the Screener, technical analysis tab, and a true
+  historical Total Return curve in Reports (Commit 006). This should be
+  its own explicit decision (which provider, API key handling via a
+  backend proxy per the AI Commander precedent in Commit 007) rather
+  than assumed.
+- **Fundamental data provider integration** — same gap, smaller
+  blast radius (Screener fundamentals only). Manual entry works today.
+
+### Verification
+
+- `npm run build` — compiles cleanly (same pre-existing bundle-size
+  warning, not an error).
+- `npm run test:run` — 104/104 tests passing.
+- `npm run lint` — 0 warnings, 0 errors.
+
 ## Commit 007 — AI Commander
 
 **Scope:** Appendix A, Commit 007.

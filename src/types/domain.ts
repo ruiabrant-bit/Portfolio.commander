@@ -38,6 +38,22 @@ export interface Asset {
   sector: string | null;
   industry: string | null;
   currency: Currency;
+  /**
+   * Fundamental data for the Screener (PRD v1.1). Optional and
+   * undefined by default — no fundamental data provider is wired into
+   * the app yet, so these are populated manually per asset until a
+   * data source is integrated. Added in Commit 008; not part of the
+   * original ADR Data Model v1.0.
+   */
+  fundamentals?: {
+    marketCap?: number;
+    peRatio?: number;
+    pegRatio?: number;
+    roe?: number; // as a decimal, e.g. 0.18 for 18%
+    revenueGrowth?: number; // as a decimal
+    epsGrowth?: number; // as a decimal
+    dividendYield?: number; // as a decimal
+  };
 }
 
 /**
