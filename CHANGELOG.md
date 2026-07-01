@@ -6,6 +6,60 @@ Agent" (§20): *"Document every architectural decision in CHANGELOG.md."*
 
 ## [Unreleased]
 
+## Commit 007 — AI Commander
+
+**Scope:** Appendix A, Commit 007.
+
+### Added
+
+- **`services/ai/aiCommander.ts`**: a deterministic, rule-based advisory
+  engine — **explicitly not an LLM integration**. Calling the Anthropic
+  API from browser JS would require embedding an API key in the client
+  bundle (a security anti-pattern this project never does), and a real
+  integration needs a backend proxy that doesn't exist in this
+  local-first architecture (ADR-001). Rather than fake it or silently
+  skip the module, this commit implements a real, working advisory
+  engine grounded in Commander Core data, enforcing every rule from PRD
+  v1.2 §9:
+  - recommendations always use advisory language ("consider…"), never
+    imperative commands
+  - every response returns a `reasoning: string[]` alongside the answer
+  - portfolio risk (max position weight, sector concentration) is always
+    computed and mentioned before any capital-allocation suggestion
+  - concentration and diversification are explained with the underlying
+    numbers, not just asserted
+  - a news/summary query is honestly deferred to Commit 009 rather than
+    fabricating an answer
+  - unrecognized queries fall back to example queries instead of a
+    generic error
+- **AI Commander page** (real implementation): "Ask anything" input,
+  conversation history, Suggested Actions (the PRD's example queries:
+  risk, riskiest position, diversification, "where should I invest
+  €500?"), and a Portfolio Insights panel — matching the PRD v1.3
+  wireframe layout. A visible banner states plainly that this is a
+  rule-based assistant, not a language model, and why — this is
+  end-user-facing, not just a code comment, since presenting simulated
+  intelligence as real AI would be misleading.
+- 10 new tests covering every branch of the advisory engine, including
+  that concentration is always checked before suggesting capital
+  deployment and that unanswerable queries (news) are honestly deferred
+  rather than answered speculatively. 86 tests total (up from 76).
+
+### Deferred (explicitly out of scope for this commit)
+
+- Real LLM integration (Claude API) — needs a backend proxy design
+  decision, which isn't part of the current local-first architecture.
+  If this is wanted, it should be scoped as its own explicit commit/ADR
+  rather than folded in here.
+- News-based queries — Commit 009.
+
+### Verification
+
+- `npm run build` — compiles cleanly (same pre-existing bundle-size
+  warning, not an error).
+- `npm run test:run` — 86/86 tests passing.
+- `npm run lint` — 0 warnings, 0 errors.
+
 ## Commit 006 — Reports
 
 **Scope:** Appendix A, Commit 006.
