@@ -1,0 +1,31 @@
+/**
+ * Minimal CSV export helper (browser-side, no dependency).
+ * Values are stringified and quoted only when they contain a comma,
+ * quote or newline.
+ */
+export function toCSV(rows: Record<string, string | number>[]): string {
+  if (rows.length === 0) return '';
+  const headers = Object.keys(rows[0]);
+  const escape = (value: string | number) => {
+    const str = String(value);
+    return /[",\n]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str;
+  };
+  const lines = [
+    headers.join(','),
+    ...rows.map((row) => headers.map((h) => escape(row[h])).join(',')),
+  ];
+  return lines.join('\n');
+}
+
+export function downloadCSV(filename: string, rows: Record<string, string | number>[]): void {
+  const csv = toCSV(rows);
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}

@@ -6,6 +6,78 @@ Agent" (§20): *"Document every architectural decision in CHANGELOG.md."*
 
 ## [Unreleased]
 
+## Commit 003 — Portfolio Module
+
+**Scope:** Appendix A, Commit 003 — Portfolio, Position Detail, plus the
+adjacent Watchlists and Journal modules (PRD v1.1), grouped here since
+they share the same underlying data (positions, assets, journal entries)
+and none were named as their own Appendix A commit.
+
+### Added
+
+- **Data model extension**: `WatchlistItem` gained `id`, `order`, `tags`,
+  `isFavorite` — the v1.0 ADR shape had only `watchlistId`/`assetId` and
+  couldn't represent the "custom tags, manual ordering, favourites"
+  requirement from PRD v1.1 §Watchlists. Additive change, documented
+  here per the "no silent architecture changes" instruction — not a
+  redesign, just filling in fields the requirement always implied.
+- **Store**: `watchlists`, `watchlistItems`, `journalEntries` state plus
+  CRUD actions (`addWatchlist`, `addWatchlistItem`,
+  `reorderWatchlistItem`, `toggleWatchlistItemFavorite`,
+  `setWatchlistItemTags`, `addJournalEntry`, `updateJournalEntry`, …) and
+  `upsertAsset` for on-the-fly asset creation. These are user-authored
+  records, not derived values, so they live in the store directly
+  (unlike positions/metrics, which stay computed-on-demand).
+- **`hooks/usePositionRows.ts`**: joins `Position[]` with `Asset`
+  metadata and per-position Commander Core metrics (market value,
+  unrealized profit, weight) for table/detail views.
+- **Portfolio page** (real implementation): sortable/filterable holdings
+  table with the exact PRD v1.1 columns, search by ticker/name, grouping
+  by Sector/Country/Asset Type/Currency, CSV export
+  (`utils/csv.ts`), row click → Position Detail.
+- **Position Detail page** (real implementation): header (ticker,
+  price, return vs avg cost) + the 8 PRD v1.1 tabs (Overview,
+  Chart, Transactions, Dividends, Notes, Technical Analysis,
+  Fundamental Analysis, AI Summary). Overview/Transactions/Dividends/
+  Notes are fully functional against real store data; Chart/Technical/
+  Fundamental/AI Summary show an inline placeholder naming the commit
+  that implements them (008/008/007), since their data sources
+  (market history, indicators, AI layer) don't exist yet. Tabs are
+  local component state so switching preserves the rest of the page.
+- **`components/position/NotesTab.tsx`**: investment thesis / personal
+  notes editor, backed by `JournalEntry`.
+- **Watchlists page** (real implementation): multiple watchlists,
+  add/remove tickers, custom tags, up/down manual ordering, favorites.
+  Price alerts remain explicitly future scope per the PRD.
+- **Journal page** (real implementation): global, cross-asset view of
+  the same `JournalEntry` records editable from the Notes tab.
+  Screenshots and review-date reminders are not yet implemented (no
+  file storage / notification layer exists yet).
+- **`services/import/demoData.ts`**: temporary sample dataset (4 assets,
+  6 trades, 2 dividends, 2 cash movements) so Portfolio/Position Detail
+  are verifiable before the CSV import wizard exists. Plain data through
+  the same `Trade`/`Dividend`/etc. shapes any import would produce —
+  nothing downstream treats it specially. The "Load Demo Data" entry
+  point on the empty Portfolio state should be removed once Commit 004
+  ships.
+- Vitest coverage for the new store logic: import de-dup, watchlist
+  reorder boundaries, favorite toggle, cascade-delete on watchlist
+  removal, journal entry create/update. 52 tests total (up from 45).
+
+### Deferred (explicitly out of scope for this commit)
+
+- CSV import wizard (real data source) — Commit 004.
+- Chart, Technical Analysis, Fundamental Analysis, AI Summary tab
+  content — Commits 008/008/007 respectively.
+- Watchlist price alerts — explicitly future scope per PRD v1.1.
+- Journal screenshots and review-date reminders.
+
+### Verification
+
+- `npm run build` — compiles cleanly.
+- `npm run test:run` — 52/52 tests passing.
+- `npm run lint` — 0 warnings, 0 errors.
+
 ## Commit 002 — Layout + Navigation
 
 **Scope:** Appendix A, Commit 002.

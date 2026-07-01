@@ -6,6 +6,9 @@ import type {
   Dividend,
   CashMovement,
   MarketQuote,
+  Watchlist,
+  WatchlistItem,
+  JournalEntry,
 } from '../types/domain';
 
 /**
@@ -16,7 +19,8 @@ import type {
  * NOT store derived values like positions, portfolio value, or risk
  * metrics: those are always computed on demand via Commander Core
  * (services/engines), per ADR-004 and ADR-005 ("Portfolio state is
- * rebuilt from transaction history").
+ * rebuilt from transaction history"). Watchlists and Journal entries are
+ * user-authored records (not derived), so they live here directly.
  */
 export interface PortfolioState {
   portfolio: Portfolio | null;
@@ -25,13 +29,30 @@ export interface PortfolioState {
   dividends: Dividend[];
   cashMovements: CashMovement[];
   quotes: MarketQuote[];
+  watchlists: Watchlist[];
+  watchlistItems: WatchlistItem[];
+  journalEntries: JournalEntry[];
 
   setPortfolio: (portfolio: Portfolio) => void;
   setAssets: (assets: Asset[]) => void;
+  upsertAsset: (asset: Asset) => void;
   addTrades: (trades: Trade[]) => void;
   addDividends: (dividends: Dividend[]) => void;
   addCashMovements: (movements: CashMovement[]) => void;
   setQuotes: (quotes: MarketQuote[]) => void;
+
+  addWatchlist: (watchlist: Watchlist) => void;
+  removeWatchlist: (watchlistId: string) => void;
+  addWatchlistItem: (item: WatchlistItem) => void;
+  removeWatchlistItem: (itemId: string) => void;
+  reorderWatchlistItem: (itemId: string, direction: 'up' | 'down') => void;
+  toggleWatchlistItemFavorite: (itemId: string) => void;
+  setWatchlistItemTags: (itemId: string, tags: string[]) => void;
+
+  addJournalEntry: (entry: JournalEntry) => void;
+  updateJournalEntry: (id: string, patch: Partial<Omit<JournalEntry, 'id'>>) => void;
+  removeJournalEntry: (id: string) => void;
+
   reset: () => void;
 }
 
@@ -42,6 +63,9 @@ const initialState = {
   dividends: [],
   cashMovements: [],
   quotes: [],
+  watchlists: [],
+  watchlistItems: [],
+  journalEntries: [],
 };
 
 export const usePortfolioStore = create<PortfolioState>((set) => ({
@@ -50,6 +74,16 @@ export const usePortfolioStore = create<PortfolioState>((set) => ({
   setPortfolio: (portfolio) => set({ portfolio }),
 
   setAssets: (assets) => set({ assets }),
+
+  upsertAsset: (asset) =>
+    set((state) => {
+      const exists = state.assets.some((a) => a.id === asset.id);
+      return {
+        assets: exists
+          ? state.assets.map((a) => (a.id === asset.id ? asset : a))
+          : [...state.assets, asset],
+      };
+    }),
 
   addTrades: (newTrades) =>
     set((state) => ({
@@ -69,6 +103,75 @@ export const usePortfolioStore = create<PortfolioState>((set) => ({
     })),
 
   setQuotes: (quotes) => set({ quotes }),
+
+  addWatchlist: (watchlist) =>
+    set((state) => ({ watchlists: [...state.watchlists, watchlist] })),
+
+  removeWatchlist: (watchlistId) =>
+    set((state) => ({
+      watchlists: state.watchlists.filter((w) => w.id !== watchlistId),
+      watchlistItems: state.watchlistItems.filter(
+        (i) => i.watchlistId !== watchlistId,
+      ),
+    })),
+
+  addWatchlistItem: (item) =>
+    set((state) => ({ watchlistItems: [...state.watchlistItems, item] })),
+
+  removeWatchlistItem: (itemId) =>
+    set((state) => ({
+      watchlistItems: state.watchlistItems.filter((i) => i.id !== itemId),
+    })),
+
+  reorderWatchlistItem: (itemId, direction) =>
+    set((state) => {
+      const item = state.watchlistItems.find((i) => i.id === itemId);
+      if (!item) return state;
+      const siblings = state.watchlistItems
+        .filter((i) => i.watchlistId === item.watchlistId)
+        .sort((a, b) => a.order - b.order);
+      const index = siblings.findIndex((i) => i.id === itemId);
+      const swapIndex = direction === 'up' ? index - 1 : index + 1;
+      if (swapIndex < 0 || swapIndex >= siblings.length) return state;
+
+      const a = siblings[index];
+      const b = siblings[swapIndex];
+      const updated = state.watchlistItems.map((i) => {
+        if (i.id === a.id) return { ...i, order: b.order };
+        if (i.id === b.id) return { ...i, order: a.order };
+        return i;
+      });
+      return { watchlistItems: updated };
+    }),
+
+  toggleWatchlistItemFavorite: (itemId) =>
+    set((state) => ({
+      watchlistItems: state.watchlistItems.map((i) =>
+        i.id === itemId ? { ...i, isFavorite: !i.isFavorite } : i,
+      ),
+    })),
+
+  setWatchlistItemTags: (itemId, tags) =>
+    set((state) => ({
+      watchlistItems: state.watchlistItems.map((i) =>
+        i.id === itemId ? { ...i, tags } : i,
+      ),
+    })),
+
+  addJournalEntry: (entry) =>
+    set((state) => ({ journalEntries: [...state.journalEntries, entry] })),
+
+  updateJournalEntry: (id, patch) =>
+    set((state) => ({
+      journalEntries: state.journalEntries.map((e) =>
+        e.id === id ? { ...e, ...patch } : e,
+      ),
+    })),
+
+  removeJournalEntry: (id) =>
+    set((state) => ({
+      journalEntries: state.journalEntries.filter((e) => e.id !== id),
+    })),
 
   reset: () => set(initialState),
 }));
