@@ -1,10 +1,11 @@
 import { Fragment, useMemo, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Search, Download, Database } from 'lucide-react';
+import { Search, Download, Database, Plus } from 'lucide-react';
 import { usePositionRows, type PositionRow } from '../hooks/usePositionRows';
 import { usePortfolioStore } from '../store/portfolioStore';
 import { buildDemoData } from '../services/import/demoData';
 import { downloadCSV } from '../utils/csv';
+import { AddTradeModal } from '../components/import/AddTradeModal';
 
 type GroupBy = 'none' | 'sector' | 'country' | 'assetType' | 'currency';
 
@@ -33,6 +34,7 @@ export function PortfolioPage() {
   const rows = usePositionRows();
   const [search, setSearch] = useState('');
   const [groupBy, setGroupBy] = useState<GroupBy>('none');
+  const [addPositionOpen, setAddPositionOpen] = useState(false);
 
   const setAssets = usePortfolioStore((s) => s.setAssets);
   const addTrades = usePortfolioStore((s) => s.addTrades);
@@ -127,6 +129,14 @@ export function PortfolioPage() {
           <Download size={14} />
           Export CSV
         </button>
+
+        <button
+          onClick={() => setAddPositionOpen(true)}
+          className="flex items-center gap-1.5 rounded-md bg-accent px-2.5 py-1.5 text-sm font-medium text-white hover:bg-accent/90"
+        >
+          <Plus size={14} />
+          Add Position
+        </button>
       </div>
 
       {rows.length === 0 ? (
@@ -135,19 +145,27 @@ export function PortfolioPage() {
           <div>
             <p className="text-sm font-medium">No positions yet</p>
             <p className="mt-1 max-w-sm text-sm text-text-muted">
-              Import a Trade Republic CSV or add a trade manually from the{' '}
+              Add a position for what you already hold, import a Trade Republic CSV from{' '}
               <Link to="/transactions" className="text-accent hover:underline">
                 Transactions
-              </Link>{' '}
-              page — or load sample data to try out this screen first.
+              </Link>
+              , or load sample data to try out this screen first.
             </p>
           </div>
-          <button
-            onClick={handleLoadDemoData}
-            className="mt-1 rounded-md bg-accent px-3 py-1.5 text-sm font-medium text-white hover:bg-accent/90"
-          >
-            Load Demo Data
-          </button>
+          <div className="mt-1 flex gap-2">
+            <button
+              onClick={() => setAddPositionOpen(true)}
+              className="rounded-md bg-accent px-3 py-1.5 text-sm font-medium text-white hover:bg-accent/90"
+            >
+              Add Position
+            </button>
+            <button
+              onClick={handleLoadDemoData}
+              className="rounded-md border border-border px-3 py-1.5 text-sm text-text-muted hover:bg-surface-hover hover:text-text"
+            >
+              Load Demo Data
+            </button>
+          </div>
         </div>
       ) : (
         <div className="overflow-x-auto rounded-lg border border-border">
@@ -220,6 +238,10 @@ export function PortfolioPage() {
             </tbody>
           </table>
         </div>
+      )}
+
+      {addPositionOpen && (
+        <AddTradeModal onClose={() => setAddPositionOpen(false)} />
       )}
     </div>
   );
